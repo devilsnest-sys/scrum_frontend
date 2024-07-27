@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import Swal from 'sweetalert2';
 
 const Login = () => {
   const [username, setUsername] = useState('');
@@ -12,10 +13,29 @@ const Login = () => {
     e.preventDefault();
     try {
       const response = await axios.post('http://localhost:5000/login', { username, password });
+      console.log('Token received:', response.data.token); // Debug token
       localStorage.setItem('token', response.data.token);
-      navigate('/dashboard');
+
+      // Show SweetAlert notification
+      Swal.fire({
+        icon: 'success',
+        title: 'Login Successful',
+        text: 'Redirecting to the dashboard...',
+        timer: 1500,
+        timerProgressBar: true,
+        showConfirmButton: false
+      }).then(() => {
+        navigate('/dashboard');
+      });
+
     } catch (error) {
       console.error(error);
+      // Handle error case (e.g., show error message)
+      Swal.fire({
+        icon: 'error',
+        title: 'Login Failed',
+        text: 'Please check your username and password.'
+      });
     }
   };
 

@@ -16,6 +16,7 @@ import {
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import { useFetchUsers } from "./useFetchUsers";
+import Swal from 'sweetalert2';
 
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
