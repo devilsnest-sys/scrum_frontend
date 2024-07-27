@@ -1,89 +1,262 @@
-// src/components/AddTaskPopup.jsx
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import zIndex from '@mui/material/styles/zIndex';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import {
+  Button,
+  TextField,
+  Select,
+  MenuItem,
+  InputLabel,
+  FormControl,
+  Box,
+  Typography,
+  Modal,
+  Chip,
+  OutlinedInput,
+  CircularProgress,
+} from "@mui/material";
+import { useTheme } from "@mui/material/styles";
+import { useFetchUsers } from "./useFetchUsers";
+
+const ITEM_HEIGHT = 48;
+const ITEM_PADDING_TOP = 8;
+const MenuProps = {
+  PaperProps: {
+    style: {
+      maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
+      width: 250,
+    },
+  },
+};
+
+function getStyles(name, personName, theme) {
+  return {
+    fontWeight:
+      personName.indexOf(name) === -1
+        ? theme.typography.fontWeightRegular
+        : theme.typography.fontWeightMedium,
+  };
+}
 
 const AddTaskPopup = ({ setShowPopup }) => {
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [assignedTo, setAssignedTo] = useState('');
-  const [status, setStatus] = useState('');
-  const [users, setUsers] = useState([]);
+  const theme = useTheme();
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [assignedTo, setAssignedTo] = useState([]);
+  const [status, setStatus] = useState("");
+  const [remarks, setRemarks] = useState("");
+  const [progress, setProgress] = useState("");
+  const [deadline, setDeadline] = useState("");
+  const [extension, setExtension] = useState("");
+  const [createdBy, setCreatedBy] = useState("");
+  const [loading, setLoading] = useState(false);
+  const { users, error: usersError, loading: usersLoading } = useFetchUsers();
 
   useEffect(() => {
-    const fetchUsers = async () => {
+    const fetchUserDetails = async () => {
       try {
-        const token = localStorage.getItem('token');
-        const response = await axios.get('http://localhost:5000/users', {
+        const token = localStorage.getItem("token");
+        const response = await axios.get("http://localhost:5000/user-details", {
           headers: { Authorization: `Bearer ${token}` },
         });
-        setUsers(response.data);
+        setCreatedBy(response.data.username);
       } catch (error) {
-        console.error('There was an error fetching the users!', error);
+        console.error("There was an error fetching the user details!", error);
       }
     };
 
-    fetchUsers();
+    fetchUserDetails();
   }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!title || !description || !status || !deadline) {
+      alert("Please fill out all required fields");
+      return;
+    }
+
+    setLoading(true);
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem("token");
       await axios.post(
-        'http://localhost:5000/tasks',
-        { title, description, assigned_to: assignedTo, status },
+        "http://localhost:5000/tasks",
+        {
+          title,
+          description,
+          assigned_to: assignedTo,
+          status,
+          remarks,
+          progress,
+          deadline,
+          extension,
+        },
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setShowPopup(false);
     } catch (error) {
       console.error(error);
+    } finally {
+      setLoading(false);
     }
   };
 
+  const handleChange = (event) => {
+    const {
+      target: { value },
+    } = event;
+    setAssignedTo(typeof value === "string" ? value.split(",") : value);
+  };
+
+  if (usersLoading) {
+    return <CircularProgress />;
+  }
+
+  if (usersError) {
+    return <Typography color="error">Failed to load users</Typography>;
+  }
+
   return (
-    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center">
-      <div className="bg-white p-6 rounded shadow-md"    >
-        <h2 className="text-2xl mb-4">Add Task</h2>
+    <Modal
+      open
+      onClose={() => setShowPopup(false)}
+      aria-labelledby="modal-modal-title"
+      aria-describedby="modal-modal-description"
+    >
+      <Box
+        sx={{
+          position: "absolute",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          width: 400,
+          bgcolor: "background.paper",
+          boxShadow: 24,
+          p: 4,
+          borderRadius: 1,
+        }}
+      >
+        <Typography id="modal-modal-title" variant="h6" component="h2" mb={2}>
+          Add Task
+        </Typography>
         <form onSubmit={handleSubmit}>
-          <input
-            type="text"
-            placeholder="Title"
+          <TextField
+            label="Title"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="mb-4 p-2 border border-gray-300 w-full"
+            fullWidth
+            margin="normal"
+            required
           />
-          <input
-            type="text"
-            placeholder="Description"
+          <TextField
+            label="Description"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            className="mb-4 p-2 border border-gray-300 w-full"
+            fullWidth
+            margin="normal"
+            required
           />
-          <select
-            value={assignedTo}
-            onChange={(e) => setAssignedTo(e.target.value)}
-            className="mb-4 p-2 border border-gray-300 w-full"
+          <FormControl fullWidth margin="normal" required>
+            <InputLabel id="assigned-to-label">Assigned To</InputLabel>
+            <Select
+              labelId="assigned-to-label"
+              multiple
+              value={assignedTo}
+              onChange={handleChange}
+              input={
+                <OutlinedInput id="select-multiple-chip" label="Assigned To" />
+              }
+              renderValue={(selected) => (
+                <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
+                  {selected.map((value) => (
+                    <Chip
+                      key={value}
+                      label={users.find((user) => user.id === value)?.username}
+                    />
+                  ))}
+                </Box>
+              )}
+              MenuProps={MenuProps}
+            >
+              {users.map((user) => (
+                <MenuItem
+                  key={user.id}
+                  value={user.id}
+                  style={getStyles(user.username, assignedTo, theme)}
+                >
+                  {user.username}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          <FormControl fullWidth margin="normal" required>
+            <InputLabel id="status-label">Status</InputLabel>
+            <Select
+              labelId="status-label"
+              value={status}
+              onChange={(e) => setStatus(e.target.value)}
+            >
+              <MenuItem value="IN PROCESS">IN PROCESS</MenuItem>
+              <MenuItem value="DONE">DONE</MenuItem>
+            </Select>
+          </FormControl>
+          <TextField
+            label="Remarks"
+            value={remarks}
+            onChange={(e) => setRemarks(e.target.value)}
+            fullWidth
+            margin="normal"
+          />
+          <TextField
+            label="Progress"
+            value={progress}
+            onChange={(e) => setProgress(e.target.value)}
+            fullWidth
+            margin="normal"
+          />
+          <TextField
+            label="Deadline"
+            type="datetime-local"
+            value={deadline}
+            onChange={(e) => setDeadline(e.target.value)}
+            fullWidth
+            margin="normal"
+            InputLabelProps={{
+              shrink: true,
+            }}
+            required
+          />
+          {/* <TextField
+            label="Extension"
+            type="datetime-local"
+            value={extension}
+            onChange={(e) => setExtension(e.target.value)}
+            fullWidth
+            margin="normal"
+            InputLabelProps={{
+              shrink: true,
+            }}
+          /> */}
+          <Button
+            type="submit"
+            variant="contained"
+            color="primary"
+            fullWidth
+            disabled={loading}
+            sx={{ mt: 2 }}
           >
-            <option value="">Select User</option>
-            {users.map((user) => (
-              <option key={user.id} value={user.id}>
-                {user.username}
-              </option>
-            ))}
-          </select>
-          <input
-            type="text"
-            placeholder="Status"
-            value={status}
-            onChange={(e) => setStatus(e.target.value)}
-            className="mb-4 p-2 border border-gray-300 w-full"
-          />
-          <button type="submit" className="w-full bg-blue-500 text-white p-2">Add Task</button>
-          <button type="button" onClick={() => setShowPopup(false)} className="w-full bg-red-500 text-white p-2 mt-2">Cancel</button>
+            {loading ? <CircularProgress size={24} /> : "Add Task"}
+          </Button>
+          <Button
+            onClick={() => setShowPopup(false)}
+            variant="contained"
+            color="secondary"
+            fullWidth
+            sx={{ mt: 2 }}
+          >
+            Cancel
+          </Button>
         </form>
-      </div>
-    </div>
+      </Box>
+    </Modal>
   );
 };
 
