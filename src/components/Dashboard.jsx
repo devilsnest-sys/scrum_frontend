@@ -1,4 +1,3 @@
-// src/components/Dashboard.jsx
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -86,7 +85,7 @@ const Dashboard = () => {
           </TableHead>
           <TableBody>
             {tasks.map((task) => (
-              <TableRow key={task.id} onClick={() => handleRowClick(task.id)} style={{ cursor: 'pointer' }}>
+              <TableRow key={task.id} onClick={() => handleRowClick(task.id)} style={{ cursor: 'pointer',backgroundColor: task.extension ? '#ddb0b0' : 'inherit', }}>
                 <TableCell>{task.id}</TableCell>
                 <TableCell>{task.title}</TableCell>
                 <TableCell>{task.assigned_to}</TableCell>

@@ -5,13 +5,13 @@ import logo from './assets/sg-logo-center-scrum.webp';
 
 function Header() {
   const navigate = useNavigate();
-  const token = localStorage.getItem('token'); // Check if token exists
-  const username = localStorage.getItem('username'); // Get username from localStorage
+  const token = localStorage.getItem('token');
+  const username = localStorage.getItem('username');
 
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('username');
-    navigate('/login'); // Redirect to login page
+    navigate('/login');
   };
 
   return (

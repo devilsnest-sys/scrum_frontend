@@ -15,6 +15,7 @@ const Login = () => {
       const response = await axios.post('http://localhost:5000/login', { username, password });
       console.log('Token received:', response.data.token); // Debug token
       localStorage.setItem('token', response.data.token);
+      localStorage.setItem('username', response.data.username); // Store username
 
       // Show SweetAlert notification
       Swal.fire({

@@ -43,7 +43,8 @@ const AddTaskPopup = ({ setShowPopup }) => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [assignedTo, setAssignedTo] = useState([]);
-  const [status, setStatus] = useState("");
+  const [primaryAssignee, setPrimaryAssignee] = useState("");
+  const [status, setStatus] = useState("IN PROCESS"); // Set default status
   const [remarks, setRemarks] = useState("");
   const [progress, setProgress] = useState("");
   const [deadline, setDeadline] = useState("");
@@ -70,7 +71,7 @@ const AddTaskPopup = ({ setShowPopup }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!title || !description || !status || !deadline) {
+    if (!title || !description || !status || !deadline || !primaryAssignee) {
       alert("Please fill out all required fields");
       return;
     }
@@ -84,17 +85,31 @@ const AddTaskPopup = ({ setShowPopup }) => {
           title,
           description,
           assigned_to: assignedTo,
+          primary_assignee: primaryAssignee,
           status,
           remarks,
           progress,
           deadline,
-          extension,
+          extension: extension || null,
         },
         { headers: { Authorization: `Bearer ${token}` } }
       );
+      Swal.fire({
+        icon: 'success',
+        title: 'Task Created Successfully',
+        text: 'Redirecting to the dashboard...',
+        timer: 1500,
+        timerProgressBar: true,
+        showConfirmButton: false
+      });
       setShowPopup(false);
     } catch (error) {
       console.error(error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Task Creation Failed',
+        text: 'An error occurred while creating the task.'
+      });
     } finally {
       setLoading(false);
     }
@@ -188,6 +203,25 @@ const AddTaskPopup = ({ setShowPopup }) => {
               ))}
             </Select>
           </FormControl>
+          {assignedTo.length > 0 && (
+            <FormControl fullWidth margin="normal" required>
+              <InputLabel id="primary-assignee-label">Primary Assignee</InputLabel>
+              <Select
+                labelId="primary-assignee-label"
+                value={primaryAssignee}
+                onChange={(e) => setPrimaryAssignee(e.target.value)}
+              >
+                {assignedTo.map((assigneeId) => {
+                  const user = users.find((user) => user.id === assigneeId);
+                  return (
+                    <MenuItem key={user.id} value={user.id}>
+                      {user.username}
+                    </MenuItem>
+                  );
+                })}
+              </Select>
+            </FormControl>
+          )}
           <FormControl fullWidth margin="normal" required>
             <InputLabel id="status-label">Status</InputLabel>
             <Select
@@ -207,13 +241,6 @@ const AddTaskPopup = ({ setShowPopup }) => {
             margin="normal"
           />
           <TextField
-            label="Progress"
-            value={progress}
-            onChange={(e) => setProgress(e.target.value)}
-            fullWidth
-            margin="normal"
-          />
-          <TextField
             label="Deadline"
             type="datetime-local"
             value={deadline}
@@ -225,17 +252,6 @@ const AddTaskPopup = ({ setShowPopup }) => {
             }}
             required
           />
-          {/* <TextField
-            label="Extension"
-            type="datetime-local"
-            value={extension}
-            onChange={(e) => setExtension(e.target.value)}
-            fullWidth
-            margin="normal"
-            InputLabelProps={{
-              shrink: true,
-            }}
-          /> */}
           <Button
             type="submit"
             variant="contained"
