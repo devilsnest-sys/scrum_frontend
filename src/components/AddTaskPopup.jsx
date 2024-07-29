@@ -230,7 +230,7 @@ const AddTaskPopup = ({ setShowPopup }) => {
               onChange={(e) => setStatus(e.target.value)}
             >
               <MenuItem value="IN PROCESS">IN PROCESS</MenuItem>
-              <MenuItem value="DONE">DONE</MenuItem>
+              {/* <MenuItem value="DONE">DONE</MenuItem> */}
             </Select>
           </FormControl>
           <TextField
