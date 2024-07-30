@@ -1,9 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import io from 'socket.io-client';
 import { Button, Typography, Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Checkbox, TextField, MenuItem, TablePagination } from '@mui/material';
 import AddTaskPopup from './AddTaskPopup';
 import ExtensionPopup from './ExtensionPopup';
+
+const socket = io('http://localhost:5000');
 
 const Dashboard = () => {
   const [tasks, setTasks] = useState([]);
@@ -14,7 +17,7 @@ const Dashboard = () => {
   const [filterStatus, setFilterStatus] = useState('');
   const [filterAssignedTo, setFilterAssignedTo] = useState('');
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [rowsPerPage, setRowsPerPage] = useState(15);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -31,6 +34,32 @@ const Dashboard = () => {
     };
 
     fetchTasks();
+
+    // Handle incoming WebSocket events
+    socket.on('newTask', (task) => {
+      setTasks((prevTasks) => [...prevTasks, task]);
+    });
+
+    socket.on('newComment', ({ task_id, comment }) => {
+      setTasks((prevTasks) => {
+        const updatedTasks = prevTasks.map(task => {
+          if (task.id === task_id) {
+            return {
+              ...task,
+              comments: [...task.comments, comment],
+            };
+          }
+          return task;
+        });
+        return updatedTasks;
+      });
+    });
+
+    // Cleanup on component unmount
+    return () => {
+      socket.off('newTask');
+      socket.off('newComment');
+    };
   }, []);
 
   const handleRowClick = (id) => {
