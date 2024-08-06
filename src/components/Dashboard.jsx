@@ -111,7 +111,8 @@ const Dashboard = () => {
   };
 
   return (
-    <Box p={4} style={{ margin: '0 0 0 auto', width: '85%' }}>
+    <div  className="container mx-auto">
+    <Box p={4}>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
         <Typography variant="h4">Dashboard</Typography>
         <Button variant="contained" color="primary" onClick={() => setShowPopup(true)}>
@@ -213,6 +214,7 @@ const Dashboard = () => {
         onSave={handleExtensionSave}
       />
     </Box>
+    </div>
   );
 };
 

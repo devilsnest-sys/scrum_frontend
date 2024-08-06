@@ -16,8 +16,8 @@ function App() {
   return (
     <Router>
       <Header />
-      <div className="flex">
-        <SideNavbar />
+      <div>
+        {/* <SideNavbar /> */}
         <div className="flex-1 p-4">
           <Routes>
             <Route path="/login" element={<Login />} />
