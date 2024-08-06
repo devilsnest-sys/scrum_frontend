@@ -6,7 +6,7 @@ import { Button, Typography, Box, Table, TableBody, TableCell, TableContainer, T
 import AddTaskPopup from './AddTaskPopup';
 import ExtensionPopup from './ExtensionPopup';
 
-const socket = io('http://localhost:5000');
+const socket = io('http://192.168.0.27:5000');
 
 const Dashboard = () => {
   const [tasks, setTasks] = useState([]);
@@ -24,7 +24,7 @@ const Dashboard = () => {
     const fetchTasks = async () => {
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.get('http://localhost:5000/tasks', {
+        const response = await axios.get('http://192.168.0.27:5000/tasks', {
           headers: { Authorization: `Bearer ${token}` },
         });
         setTasks(response.data);
@@ -69,7 +69,7 @@ const Dashboard = () => {
   const handleExtensionSave = async ({ extendedDate, reason }) => {
     try {
       const token = localStorage.getItem('token');
-      await axios.patch(`http://localhost:5000/tasks/${extensionPopup.taskId}/extension`, 
+      await axios.patch(`http://192.168.0.27:5000/tasks/${extensionPopup.taskId}/extension`, 
         { extendedDate, reason }, 
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -81,7 +81,7 @@ const Dashboard = () => {
 
       setExtensionPopup({ open: false, taskId: null });
       // Optionally refetch tasks or update the UI to reflect changes
-      const response = await axios.get('http://localhost:5000/tasks', {
+      const response = await axios.get('http://192.168.0.27:5000/tasks', {
         headers: { Authorization: `Bearer ${token}` },
       });
       setTasks(response.data);
@@ -98,6 +98,8 @@ const Dashboard = () => {
       (filterAssignedTo === '' || task.assigned_to.includes(filterAssignedTo))
     );
   });
+
+  const uniqueUsers = [...new Set(tasks.map(task => task.assigned_to))];
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -118,36 +120,42 @@ const Dashboard = () => {
       </Box>
       {showPopup && <AddTaskPopup setShowPopup={setShowPopup} />}
       <Box display="block" justifyContent="space-between" alignItems="center" mb={2} p={1} style={{ background: '#f5f5f5', borderRadius: '4px' }}>
-      <TextField
-        label="Task ID"
-        value={filterId}
-        onChange={(e) => setFilterId(e.target.value)}
-        variant="outlined"
-        size="small"
-        style={{ marginRight: 8, width: '20%' }}
-      />
-      <TextField
-        label="Status"
-        value={filterStatus}
-        onChange={(e) => setFilterStatus(e.target.value)}
-        variant="outlined"
-        size="small"
-        select
-        style={{ marginRight: 8, width: '20%' }}
-      >
-        <MenuItem value="">All</MenuItem>
-        <MenuItem value="IN PROCESS">IN PROCESS</MenuItem>
-        <MenuItem value="COMPLETED">DONE</MenuItem>
-      </TextField>
-      <TextField
-        label="Assigned To"
-        value={filterAssignedTo}
-        onChange={(e) => setFilterAssignedTo(e.target.value)}
-        variant="outlined"
-        size="small"
-        style={{ width: '20%' }}
-      />
-    </Box>
+        <TextField
+          label="Task ID"
+          value={filterId}
+          onChange={(e) => setFilterId(e.target.value)}
+          variant="outlined"
+          size="small"
+          style={{ marginRight: 8, width: '20%' }}
+        />
+        <TextField
+          label="Status"
+          value={filterStatus}
+          onChange={(e) => setFilterStatus(e.target.value)}
+          variant="outlined"
+          size="small"
+          select
+          style={{ marginRight: 8, width: '20%' }}
+        >
+          <MenuItem value="">All</MenuItem>
+          <MenuItem value="IN PROCESS">IN PROCESS</MenuItem>
+          <MenuItem value="COMPLETED">DONE</MenuItem>
+        </TextField>
+        <TextField
+          label="Assigned To"
+          value={filterAssignedTo}
+          onChange={(e) => setFilterAssignedTo(e.target.value)}
+          variant="outlined"
+          size="small"
+          select
+          style={{ width: '20%' }}
+        >
+          <MenuItem value="">All</MenuItem>
+          {uniqueUsers.map(user => (
+            <MenuItem key={user} value={user}>{user}</MenuItem>
+          ))}
+        </TextField>
+      </Box>
       <TableContainer component={Paper}>
         <Table>
           <TableHead>

@@ -57,7 +57,7 @@ const AddTaskPopup = ({ setShowPopup }) => {
     const fetchUserDetails = async () => {
       try {
         const token = localStorage.getItem("token");
-        const response = await axios.get("http://localhost:5000/user-details", {
+        const response = await axios.get("http://192.168.0.27:5000/user-details", {
           headers: { Authorization: `Bearer ${token}` },
         });
         setCreatedBy(response.data.username);
@@ -80,7 +80,7 @@ const AddTaskPopup = ({ setShowPopup }) => {
     try {
       const token = localStorage.getItem("token");
       await axios.post(
-        "http://localhost:5000/tasks",
+        "http://192.168.0.27:5000/tasks",
         {
           title,
           description,

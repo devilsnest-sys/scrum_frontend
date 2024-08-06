@@ -10,7 +10,7 @@ export const useFetchUsers = () => {
     const fetchUsers = async () => {
       try {
         const token = localStorage.getItem("token");
-        const response = await axios.get("http://localhost:5000/users", {
+        const response = await axios.get("http://192.168.0.27:5000/users", {
           headers: { Authorization: `Bearer ${token}` },
         });
         setUsers(response.data);

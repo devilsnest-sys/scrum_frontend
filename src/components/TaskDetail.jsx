@@ -32,7 +32,7 @@ const TaskDetail = () => {
     const fetchTaskDetails = async () => {
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.get(`http://localhost:5000/tasks/${id}`, {
+        const response = await axios.get(`http://192.168.0.27:5000/tasks/${id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setTask(response.data.task);
@@ -59,13 +59,13 @@ const TaskDetail = () => {
     try {
       const token = localStorage.getItem('token');
       await axios.post(
-        `http://localhost:5000/comments`,
+        `http://192.168.0.27:5000/comments`,
         { task_id: id, comment: newComment },
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setNewComment('');
       // Re-fetch comments to update the list
-      const response = await axios.get(`http://localhost:5000/tasks/${id}`, {
+      const response = await axios.get(`http://192.168.0.27:5000/tasks/${id}`, {
         headers: { Authorization: `Bearer ${token}` } },
       );
       setComments(response.data.comments);
@@ -82,7 +82,7 @@ const TaskDetail = () => {
     try {
       const token = localStorage.getItem('token');
       await axios.patch(
-        `http://localhost:5000/tasks/${id}/status`,
+        `http://192.168.0.27:5000/tasks/${id}/status`,
         { status },
         { headers: { Authorization: `Bearer ${token}` } }
       );
