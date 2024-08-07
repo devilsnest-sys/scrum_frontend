@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Container, Box, Typography, TextField, Button, CircularProgress, Paper, Grid } from '@mui/material';
 import { styled } from '@mui/system';
 import Swal from 'sweetalert2';
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
 const StyledPaper = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(3),
@@ -21,7 +22,7 @@ const Profile = () => {
     const fetchProfile = async () => {
       setLoading(true);
       try {
-        const response = await axios.get('http://192.168.0.27:5000/profile', {
+        const response = await axios.get(`${API_BASE_URL}/profile`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`
           }

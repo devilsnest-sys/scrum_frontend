@@ -6,7 +6,8 @@ import { Button, Typography, Box, Table, TableBody, TableCell, TableContainer, T
 import AddTaskPopup from './AddTaskPopup';
 import ExtensionPopup from './ExtensionPopup';
 
-const socket = io('http://192.168.0.27:5000');
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
+const socket = io(API_BASE_URL);
 
 const Dashboard = () => {
   const [tasks, setTasks] = useState([]);
@@ -21,10 +22,16 @@ const Dashboard = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      navigate('/login');
+      return;
+    }
+
     const fetchTasks = async () => {
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.get('http://192.168.0.27:5000/tasks', {
+        const response = await axios.get(`${API_BASE_URL}/tasks`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setTasks(response.data);
@@ -69,7 +76,7 @@ const Dashboard = () => {
   const handleExtensionSave = async ({ extendedDate, reason }) => {
     try {
       const token = localStorage.getItem('token');
-      await axios.patch(`http://192.168.0.27:5000/tasks/${extensionPopup.taskId}/extension`, 
+      await axios.patch(`${API_BASE_URL}/tasks/${extensionPopup.taskId}/extension`, 
         { extendedDate, reason }, 
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -81,7 +88,7 @@ const Dashboard = () => {
 
       setExtensionPopup({ open: false, taskId: null });
       // Optionally refetch tasks or update the UI to reflect changes
-      const response = await axios.get('http://192.168.0.27:5000/tasks', {
+      const response = await axios.get(`${API_BASE_URL}/tasks`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setTasks(response.data);
@@ -99,7 +106,7 @@ const Dashboard = () => {
     );
   });
 
-  const uniqueUsers = [...new Set(tasks.map(task => task.assigned_to))];
+  const uniqueUsers = [...new Set(tasks.flatMap(task => task.assigned_to?.split(',').map(user => user.trim()) ?? []))];
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -111,109 +118,109 @@ const Dashboard = () => {
   };
 
   return (
-    <div  className="container mx-auto">
-    <Box p={4}>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
-        <Typography variant="h4">Dashboard</Typography>
-        <Button variant="contained" color="primary" onClick={() => setShowPopup(true)}>
-          Add Task
-        </Button>
-      </Box>
-      {showPopup && <AddTaskPopup setShowPopup={setShowPopup} />}
-      <Box display="block" justifyContent="space-between" alignItems="center" mb={2} p={1} style={{ background: '#f5f5f5', borderRadius: '4px' }}>
-        <TextField
-          label="Task ID"
-          value={filterId}
-          onChange={(e) => setFilterId(e.target.value)}
-          variant="outlined"
-          size="small"
-          style={{ marginRight: 8, width: '20%' }}
-        />
-        <TextField
-          label="Status"
-          value={filterStatus}
-          onChange={(e) => setFilterStatus(e.target.value)}
-          variant="outlined"
-          size="small"
-          select
-          style={{ marginRight: 8, width: '20%' }}
-        >
-          <MenuItem value="">All</MenuItem>
-          <MenuItem value="IN PROCESS">IN PROCESS</MenuItem>
-          <MenuItem value="COMPLETED">DONE</MenuItem>
-        </TextField>
-        <TextField
-          label="Assigned To"
-          value={filterAssignedTo}
-          onChange={(e) => setFilterAssignedTo(e.target.value)}
-          variant="outlined"
-          size="small"
-          select
-          style={{ width: '20%' }}
-        >
-          <MenuItem value="">All</MenuItem>
-          {uniqueUsers.map(user => (
-            <MenuItem key={user} value={user}>{user}</MenuItem>
-          ))}
-        </TextField>
-      </Box>
-      <TableContainer component={Paper}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell sx={{ padding: '3px 8px' }}>ID</TableCell>
-              <TableCell sx={{ padding: '3px 8px' }}>Title</TableCell>
-              <TableCell sx={{ padding: '3px 8px' }}>Assigned To</TableCell>
-              <TableCell sx={{ padding: '3px 8px' }}>Created By</TableCell>
-              <TableCell sx={{ padding: '3px 8px' }}>Status</TableCell>
-              <TableCell sx={{ padding: '3px 8px' }}>Created At</TableCell>
-              <TableCell sx={{ padding: '3px 8px' }}>Remarks</TableCell>
-              <TableCell sx={{ padding: '3px 8px' }}>Progress</TableCell>
-              <TableCell sx={{ padding: '3px 8px' }}>Deadline</TableCell>
-              <TableCell sx={{ padding: '3px 8px' }}>Extension</TableCell>
-              <TableCell sx={{ padding: '3px 8px' }}>Extended Date</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {filteredTasks.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((task) => (
-              <TableRow key={task.id} onClick={() => handleRowClick(task.id)} style={{ cursor: 'pointer', backgroundColor: task.status === 'DONE' ? '#a0c3a0' : (task.extension ? '#ddb0b0' : 'inherit') }}>
-                <TableCell sx={{ padding: '3px 8px' }}>{task.id}</TableCell>
-                <TableCell sx={{ padding: '3px 8px' }}>{task.title}</TableCell>
-                <TableCell sx={{ padding: '3px 8px' }}>{task.assigned_to}</TableCell>
-                <TableCell sx={{ padding: '3px 8px' }}>{task.created_by_name}</TableCell>
-                <TableCell sx={{ padding: '3px 8px' }}>{task.status}</TableCell>
-                <TableCell sx={{ padding: '3px 8px' }}>{new Date(task.created_at).toLocaleString()}</TableCell>
-                <TableCell sx={{ padding: '3px 8px' }}>{task.remarks}</TableCell>
-                <TableCell sx={{ padding: '3px 8px' }}>{task.progress}</TableCell>
-                <TableCell sx={{ padding: '3px 8px' }}>{new Date(task.deadline).toLocaleString()}</TableCell>
-                <TableCell sx={{ padding: '3px 8px' }}>
-                  <Checkbox
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setExtensionPopup({ open: true, taskId: task.id });
-                    }}
-                  />
-                </TableCell>
-                <TableCell sx={{ padding: '3px 8px' }}>{task.extension}</TableCell>
-              </TableRow>
+    <div className="container mx-auto">
+      <Box p={4}>
+        <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
+          <Typography variant="h4">Dashboard</Typography>
+          <Button variant="contained" color="primary" onClick={() => setShowPopup(true)}>
+            Add Task
+          </Button>
+        </Box>
+        {showPopup && <AddTaskPopup setShowPopup={setShowPopup} />}
+        <Box display="block" justifyContent="space-between" alignItems="center" mb={2} p={1} style={{ background: '#f5f5f5', borderRadius: '4px' }}>
+          <TextField
+            label="Task ID"
+            value={filterId}
+            onChange={(e) => setFilterId(e.target.value)}
+            variant="outlined"
+            size="small"
+            style={{ marginRight: 8, width: '20%' }}
+          />
+          <TextField
+            label="Status"
+            value={filterStatus}
+            onChange={(e) => setFilterStatus(e.target.value)}
+            variant="outlined"
+            size="small"
+            select
+            style={{ marginRight: 8, width: '20%' }}
+          >
+            <MenuItem value="">All</MenuItem>
+            <MenuItem value="IN PROCESS">IN PROCESS</MenuItem>
+            <MenuItem value="COMPLETED">DONE</MenuItem>
+          </TextField>
+          <TextField
+            label="Assigned To"
+            value={filterAssignedTo}
+            onChange={(e) => setFilterAssignedTo(e.target.value)}
+            variant="outlined"
+            size="small"
+            select
+            style={{ width: '20%' }}
+          >
+            <MenuItem value="">All</MenuItem>
+            {uniqueUsers.map(user => (
+              <MenuItem key={user} value={user}>{user}</MenuItem>
             ))}
-          </TableBody>
-        </Table>
-        <TablePagination
-          component="div"
-          count={filteredTasks.length}
-          page={page}
-          onPageChange={handleChangePage}
-          rowsPerPage={rowsPerPage}
-          onRowsPerPageChange={handleChangeRowsPerPage}
+          </TextField>
+        </Box>
+        <TableContainer component={Paper}>
+          <Table>
+            <TableHead>
+              <TableRow sx={{background: '#d4d4d4' }}>
+                <TableCell sx={{ padding: '3px 8px' }}>ID</TableCell>
+                <TableCell sx={{ padding: '3px 8px' }}>Title</TableCell>
+                <TableCell sx={{ padding: '3px 8px' }}>Assigned To</TableCell>
+                <TableCell sx={{ padding: '3px 8px' }}>Created By</TableCell>
+                <TableCell sx={{ padding: '3px 8px' }}>Status</TableCell>
+                <TableCell sx={{ padding: '3px 8px' }}>Created At</TableCell>
+                <TableCell sx={{ padding: '3px 8px' }}>Remarks</TableCell>
+                <TableCell sx={{ padding: '3px 8px' }}>Progress</TableCell>
+                <TableCell sx={{ padding: '3px 8px' }}>Deadline</TableCell>
+                <TableCell sx={{ padding: '3px 8px' }}>Extension</TableCell>
+                <TableCell sx={{ padding: '3px 8px' }}>Extended Date</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {filteredTasks.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((task) => (
+                <TableRow key={task.id} onClick={() => handleRowClick(task.id)} style={{ cursor: 'pointer', backgroundColor: task.status === 'DONE' ? '#a0c3a0' : (task.extension ? '#ddb0b0' : 'inherit') }}>
+                  <TableCell sx={{ padding: '3px 8px' }}>{task.id}</TableCell>
+                  <TableCell sx={{ padding: '3px 8px' }}>{task.title}</TableCell>
+                  <TableCell sx={{ padding: '3px 8px' }}>{task.assigned_to}</TableCell>
+                  <TableCell sx={{ padding: '3px 8px' }}>{task.created_by_name}</TableCell>
+                  <TableCell sx={{ padding: '3px 8px' }}>{task.status}</TableCell>
+                  <TableCell sx={{ padding: '3px 8px' }}>{new Date(task.created_at).toLocaleString()}</TableCell>
+                  <TableCell sx={{ padding: '3px 8px' }}>{task.remarks}</TableCell>
+                  <TableCell sx={{ padding: '3px 8px' }}>{task.progress}</TableCell>
+                  <TableCell sx={{ padding: '3px 8px' }}>{new Date(task.deadline).toLocaleString()}</TableCell>
+                  <TableCell sx={{ padding: '3px 8px' }}>
+                    <Checkbox
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setExtensionPopup({ open: true, taskId: task.id });
+                      }}
+                    />
+                  </TableCell>
+                  <TableCell sx={{ padding: '3px 8px' }}>{task.extension}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+          <TablePagination
+            component="div"
+            count={filteredTasks.length}
+            page={page}
+            onPageChange={handleChangePage}
+            rowsPerPage={rowsPerPage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+          />
+        </TableContainer>
+        <ExtensionPopup
+          open={extensionPopup.open}
+          onClose={() => setExtensionPopup({ open: false, taskId: null })}
+          onSave={handleExtensionSave}
         />
-      </TableContainer>
-      <ExtensionPopup
-        open={extensionPopup.open}
-        onClose={() => setExtensionPopup({ open: false, taskId: null })}
-        onSave={handleExtensionSave}
-      />
-    </Box>
+      </Box>
     </div>
   );
 };

@@ -17,6 +17,7 @@ import {
   IconButton,
 } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
 const TaskDetail = () => {
   const { id } = useParams();
@@ -32,7 +33,7 @@ const TaskDetail = () => {
     const fetchTaskDetails = async () => {
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.get(`http://192.168.0.27:5000/tasks/${id}`, {
+        const response = await axios.get(`${API_BASE_URL}/tasks/${id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setTask(response.data.task);
@@ -59,13 +60,13 @@ const TaskDetail = () => {
     try {
       const token = localStorage.getItem('token');
       await axios.post(
-        `http://192.168.0.27:5000/comments`,
+        `${API_BASE_URL}/comments`,
         { task_id: id, comment: newComment },
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setNewComment('');
       // Re-fetch comments to update the list
-      const response = await axios.get(`http://192.168.0.27:5000/tasks/${id}`, {
+      const response = await axios.get(`${API_BASE_URL}/tasks/${id}`, {
         headers: { Authorization: `Bearer ${token}` } },
       );
       setComments(response.data.comments);
@@ -82,7 +83,7 @@ const TaskDetail = () => {
     try {
       const token = localStorage.getItem('token');
       await axios.patch(
-        `http://192.168.0.27:5000/tasks/${id}/status`,
+        `${API_BASE_URL}/tasks/${id}/status`,
         { status },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -113,7 +114,8 @@ const TaskDetail = () => {
   };
 
   return (
-    <Box p={4} style={{ width: '85%', margin: '0px 0 0 auto' }}>
+    <div className="container mx-auto">
+    <Box p={4}>
       <Paper style={{ padding: 16 }}>
         <Typography variant="h4" gutterBottom>Task Details</Typography>
         <Grid container spacing={2}>
@@ -290,6 +292,7 @@ const TaskDetail = () => {
         </Box>
       </Paper>
     </Box>
+    </div>
   );
 };
 

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
 const Register = () => {
   const [username, setUsername] = useState('');
@@ -37,7 +38,7 @@ const Register = () => {
       return;
     }
     try {
-      await axios.post('http://192.168.0.27:5000/register', { username, password, email, role });
+      await axios.post(`${API_BASE_URL}/register`, { username, password, email, role });
       Swal.fire({
         icon: 'success',
         title: 'Register Successful',

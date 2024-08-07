@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
 export const useFetchUsers = () => {
   const [users, setUsers] = useState([]);
@@ -10,7 +11,7 @@ export const useFetchUsers = () => {
     const fetchUsers = async () => {
       try {
         const token = localStorage.getItem("token");
-        const response = await axios.get("http://192.168.0.27:5000/users", {
+        const response = await axios.get(`${API_BASE_URL}/users`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setUsers(response.data);

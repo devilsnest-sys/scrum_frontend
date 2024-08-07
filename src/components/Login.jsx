@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
 const Login = () => {
   const [username, setUsername] = useState('');
@@ -12,8 +13,8 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('http://192.168.0.27:5000/login', { username, password });
-      console.log('Token received:', response.data.token); // Debug token
+      const response = await axios.post(`${API_BASE_URL}/login`, { username, password });
+     // console.log('Token received:', response.data.token); // Debug token
       localStorage.setItem('token', response.data.token);
       localStorage.setItem('username', response.data.username); // Store username
 
