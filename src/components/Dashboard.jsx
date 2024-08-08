@@ -72,6 +72,10 @@ const Dashboard = () => {
   const handleRowClick = (id) => {
     navigate(`/task/${id}`);
   };
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+  };
 
   const handleExtensionSave = async ({ extendedDate, reason }) => {
     try {
@@ -190,63 +194,71 @@ const Dashboard = () => {
           </TextField>
         </Box>
         <TableContainer component={Paper}>
-          <Table>
-            <TableHead>
-              <TableRow sx={{background: '#d4d4d4' }}>
-                <TableCell sx={{ padding: '3px 8px' }}>ID</TableCell>
-                <TableCell sx={{ padding: '3px 8px' }}>Title</TableCell>
-                <TableCell sx={{ padding: '3px 8px' }}>Assigned To</TableCell>
-                <TableCell sx={{ padding: '3px 8px' }}>Created By</TableCell>
-                <TableCell sx={{ padding: '3px 8px' }}>Status</TableCell>
-                <TableCell sx={{ padding: '3px 8px' }}>Remarks</TableCell>
-                <TableCell sx={{ padding: '3px 8px' }}>Progress</TableCell>
-                <TableCell sx={{ padding: '3px 8px' }}>Primary User</TableCell>
-                <TableCell sx={{ padding: '3px 8px' }}>Extension</TableCell>
-                <TableCell sx={{ padding: '3px 8px' }}>Extended Date</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {filteredTasks.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((task) => (
-                <TableRow
-                  key={task.id}
-                  onClick={() => handleRowClick(task.id)}
-                  style={{
-                    cursor: 'pointer',
-                    backgroundColor: isDeadlineExceeded(task.deadline)
-                      ? '#f8d7da'
-                      : task.status === 'DONE'
-                      ? '#a0c3a0'
-                      : task.extension
-                      ? '#ddb0b0'
-                      : 'inherit'
-                  }}
-                >
-                  <TableCell sx={{ padding: '3px 8px' }}>{task.id}</TableCell>
-                  <TableCell sx={{ padding: '3px 8px' }}>{task.title}</TableCell>
-                  <TableCell sx={{ padding: '3px 8px' }}>
-                    {task.assigned_to && task.assigned_to.split(',').map(user => (
-                      <span key={user} style={isPrimaryUser(user, task.primary_user_name) ? { color: 'green', fontWeight: 'bold' } : {}}>
-                        {user}
-                      </span>
-                    )).reduce((prev, curr) => [prev, ', ', curr])}
-                  </TableCell>
-                  <TableCell sx={{ padding: '3px 8px' }}>{task.created_by_name}</TableCell>
-                  <TableCell sx={{ padding: '3px 8px' }}>{task.status}</TableCell>
-                  <TableCell sx={{ padding: '3px 8px' }}>{task.remarks}</TableCell>
-                  <TableCell sx={{ padding: '3px 8px' }}>
-                    <Checkbox checked={task.progress === 1} readOnly />
-                  </TableCell>
-                  <TableCell sx={{ padding: '3px 8px' }}>{task.primary_user_name}</TableCell>
-                  <TableCell sx={{ padding: '3px 8px' }}>
-                    {task.extension ? <Button onClick={(e) => { e.stopPropagation(); setExtensionPopup({ open: true, taskId: task.id }); }}>Extend</Button> : 'N/A'}
-                  </TableCell>
-                  <TableCell sx={{ padding: '3px 8px' }}>
-                    {extendedDetails[task.id]?.extendedDate ? new Date(extendedDetails[task.id].extendedDate).toLocaleDateString() : 'N/A'}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+        <Table>
+  <TableHead>
+    <TableRow sx={{ background: '#d4d4d4' }}>
+      <TableCell sx={{ padding: '3px 8px' }}>ID</TableCell>
+      <TableCell sx={{ padding: '3px 8px' }}>Title</TableCell>
+      <TableCell sx={{ padding: '3px 8px' }}>Assigned To</TableCell>
+      <TableCell sx={{ padding: '3px 8px' }}>Created By</TableCell>
+      <TableCell sx={{ padding: '3px 8px' }}>Status</TableCell>
+      <TableCell sx={{ padding: '3px 8px' }}>Remarks</TableCell>
+      <TableCell sx={{ padding: '3px 8px' }}>Progress</TableCell>
+      <TableCell sx={{ padding: '3px 8px' }}>Primary User</TableCell>
+      <TableCell sx={{ padding: '3px 8px' }}>Extension</TableCell>
+      <TableCell sx={{ padding: '3px 8px' }}>Extended Date</TableCell>
+      <TableCell sx={{ padding: '3px 8px' }}>Created Date</TableCell>
+      <TableCell sx={{ padding: '3px 8px' }}>Deadline</TableCell>
+    </TableRow>
+  </TableHead>
+  <TableBody>
+    {filteredTasks.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((task) => (
+      <TableRow
+        key={task.id}
+        onClick={() => handleRowClick(task.id)}
+        style={{
+          cursor: 'pointer',
+          backgroundColor: isDeadlineExceeded(task.deadline)
+            ? '#f8d7da'
+            : task.status === 'DONE'
+            ? '#a0c3a0'
+            : task.extension
+            ? '#ddb0b0'
+            : 'inherit',
+        }}
+      >
+        <TableCell sx={{ padding: '3px 8px' }}>{task.id}</TableCell>
+        <TableCell sx={{ padding: '3px 8px' }}>{task.title}</TableCell>
+        <TableCell sx={{ padding: '3px 8px' }}>
+          {task.assigned_to && task.assigned_to.split(',').map(user => (
+            <span key={user} style={isPrimaryUser(user, task.primary_user_name) ? { color: 'green', fontWeight: 'bold' } : {}}>
+              {user}
+            </span>
+          )).reduce((prev, curr) => [prev, ', ', curr])}
+        </TableCell>
+        <TableCell sx={{ padding: '3px 8px' }}>{task.created_by_name}</TableCell>
+        <TableCell sx={{ padding: '3px 8px' }}>{task.status}</TableCell>
+        <TableCell sx={{ padding: '3px 8px' }}>{task.remarks}</TableCell>
+        <TableCell sx={{ padding: '3px 8px' }}>
+          <Checkbox checked={task.progress === 1} readOnly />
+        </TableCell>
+        <TableCell sx={{ padding: '3px 8px' }}>{task.primary_user_name}</TableCell>
+        <TableCell sx={{ padding: '3px 8px' }}>
+          {task.extension ? <Button onClick={(e) => { e.stopPropagation(); setExtensionPopup({ open: true, taskId: task.id }); }}>Extend</Button> : 'N/A'}
+        </TableCell>
+        <TableCell sx={{ padding: '3px 8px' }}>
+          {task.extension ? formatDate(task.extension) : 'N/A'}
+        </TableCell>
+        <TableCell sx={{ padding: '3px 8px' }}>
+          {formatDate(task.created_at)}
+        </TableCell>
+        <TableCell sx={{ padding: '3px 8px' }}>
+          {formatDate(task.deadline)}
+        </TableCell>
+      </TableRow>
+    ))}
+  </TableBody>
+</Table>
           <TablePagination
             rowsPerPageOptions={[5, 10, 15]}
             component="div"
