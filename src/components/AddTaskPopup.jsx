@@ -18,6 +18,8 @@ import { useTheme } from "@mui/material/styles";
 import { useFetchUsers } from "./useFetchUsers";
 import Swal from 'sweetalert2';
 
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
+
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
 const MenuProps = {
@@ -57,7 +59,7 @@ const AddTaskPopup = ({ setShowPopup }) => {
     const fetchUserDetails = async () => {
       try {
         const token = localStorage.getItem("token");
-        const response = await axios.get("http://192.168.0.27:5000/user-details", {
+        const response = await axios.get(`${API_BASE_URL}/user-details`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setCreatedBy(response.data.username);
@@ -80,7 +82,7 @@ const AddTaskPopup = ({ setShowPopup }) => {
     try {
       const token = localStorage.getItem("token");
       await axios.post(
-        "http://192.168.0.27:5000/tasks",
+        `${API_BASE_URL}/tasks`,
         {
           title,
           description,
@@ -242,7 +244,7 @@ const AddTaskPopup = ({ setShowPopup }) => {
           />
           <TextField
             label="Deadline"
-            type="datetime-local"
+            type="date"
             value={deadline}
             onChange={(e) => setDeadline(e.target.value)}
             fullWidth

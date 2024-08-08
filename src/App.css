@@ -34,6 +34,9 @@
 .App-link {
   color: #61dafb;
 }
+.css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root{
+  padding: 2px!important;
+}
 
 @keyframes App-logo-spin {
   from {

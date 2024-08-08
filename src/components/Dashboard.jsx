@@ -117,6 +117,8 @@ const Dashboard = () => {
     setPage(0);
   };
 
+  const isPrimaryUser = (user, primaryUserName) => user.trim() === primaryUserName;
+
   return (
     <div className="container mx-auto">
       <Box p={4}>
@@ -186,7 +188,13 @@ const Dashboard = () => {
                 <TableRow key={task.id} onClick={() => handleRowClick(task.id)} style={{ cursor: 'pointer', backgroundColor: task.status === 'DONE' ? '#a0c3a0' : (task.extension ? '#ddb0b0' : 'inherit') }}>
                   <TableCell sx={{ padding: '3px 8px' }}>{task.id}</TableCell>
                   <TableCell sx={{ padding: '3px 8px' }}>{task.title}</TableCell>
-                  <TableCell sx={{ padding: '3px 8px' }}>{task.assigned_to}</TableCell>
+                  <TableCell sx={{ padding: '3px 8px' }}>
+                    {task.assigned_to.split(',').map(user => (
+                      <span key={user} style={isPrimaryUser(user, task.primary_user_name) ? { color: 'green', fontWeight: 'bold' } : {}}>
+                        {user}
+                      </span>
+                    )).reduce((prev, curr) => [prev, ', ', curr])}
+                  </TableCell>
                   <TableCell sx={{ padding: '3px 8px' }}>{task.created_by_name}</TableCell>
                   <TableCell sx={{ padding: '3px 8px' }}>{task.status}</TableCell>
                   <TableCell sx={{ padding: '3px 8px' }}>{new Date(task.created_at).toLocaleString()}</TableCell>
