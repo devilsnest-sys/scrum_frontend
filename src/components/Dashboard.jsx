@@ -17,6 +17,7 @@ const Dashboard = () => {
   const [filterId, setFilterId] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
   const [filterAssignedTo, setFilterAssignedTo] = useState('');
+  const [filterPrimaryUser, setFilterPrimaryUser] = useState('');
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(15);
   const navigate = useNavigate();
@@ -30,7 +31,6 @@ const Dashboard = () => {
 
     const fetchTasks = async () => {
       try {
-        const token = localStorage.getItem('token');
         const response = await axios.get(`${API_BASE_URL}/tasks`, {
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -67,7 +67,7 @@ const Dashboard = () => {
       socket.off('newTask');
       socket.off('newComment');
     };
-  }, []);
+  }, [navigate]);
 
   const handleRowClick = (id) => {
     navigate(`/task/${id}`);
@@ -102,11 +102,13 @@ const Dashboard = () => {
     return (
       (filterId === '' || task.id.toString().includes(filterId)) &&
       (filterStatus === '' || task.status.includes(filterStatus)) &&
-      (filterAssignedTo === '' || task.assigned_to.includes(filterAssignedTo))
+      (filterAssignedTo === '' || (task.assigned_to && task.assigned_to.includes(filterAssignedTo))) &&
+      (filterPrimaryUser === '' || (task.primary_user_name && task.primary_user_name.includes(filterPrimaryUser)))
     );
   });
 
   const uniqueUsers = [...new Set(tasks.flatMap(task => task.assigned_to?.split(',').map(user => user.trim()) ?? []))];
+  const uniquePrimaryUsers = [...new Set(tasks.map(task => task.primary_user_name).filter(user => user))];
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -118,6 +120,13 @@ const Dashboard = () => {
   };
 
   const isPrimaryUser = (user, primaryUserName) => user.trim() === primaryUserName;
+
+  // Helper function to determine if the deadline is exceeded
+  const isDeadlineExceeded = (deadline) => {
+    if (!deadline) return false;
+    const deadlineDate = new Date(deadline);
+    return deadlineDate < new Date();
+  };
 
   return (
     <div className="container mx-auto">
@@ -136,7 +145,7 @@ const Dashboard = () => {
             onChange={(e) => setFilterId(e.target.value)}
             variant="outlined"
             size="small"
-            style={{ marginRight: 8, width: '20%' }}
+            style={{ marginRight: 8, width: '15%' }}
           />
           <TextField
             label="Status"
@@ -145,7 +154,7 @@ const Dashboard = () => {
             variant="outlined"
             size="small"
             select
-            style={{ marginRight: 8, width: '20%' }}
+            style={{ marginRight: 8, width: '15%' }}
           >
             <MenuItem value="">All</MenuItem>
             <MenuItem value="IN PROCESS">IN PROCESS</MenuItem>
@@ -158,10 +167,24 @@ const Dashboard = () => {
             variant="outlined"
             size="small"
             select
-            style={{ width: '20%' }}
+            style={{ marginRight: 8, width: '15%' }}
           >
             <MenuItem value="">All</MenuItem>
             {uniqueUsers.map(user => (
+              <MenuItem key={user} value={user}>{user}</MenuItem>
+            ))}
+          </TextField>
+          <TextField
+            label="Primary User"
+            value={filterPrimaryUser}
+            onChange={(e) => setFilterPrimaryUser(e.target.value)}
+            variant="outlined"
+            size="small"
+            select
+            style={{ width: '15%' }}
+          >
+            <MenuItem value="">All</MenuItem>
+            {uniquePrimaryUsers.map(user => (
               <MenuItem key={user} value={user}>{user}</MenuItem>
             ))}
           </TextField>
@@ -175,21 +198,33 @@ const Dashboard = () => {
                 <TableCell sx={{ padding: '3px 8px' }}>Assigned To</TableCell>
                 <TableCell sx={{ padding: '3px 8px' }}>Created By</TableCell>
                 <TableCell sx={{ padding: '3px 8px' }}>Status</TableCell>
-                <TableCell sx={{ padding: '3px 8px' }}>Created At</TableCell>
                 <TableCell sx={{ padding: '3px 8px' }}>Remarks</TableCell>
                 <TableCell sx={{ padding: '3px 8px' }}>Progress</TableCell>
-                <TableCell sx={{ padding: '3px 8px' }}>Deadline</TableCell>
+                <TableCell sx={{ padding: '3px 8px' }}>Primary User</TableCell>
                 <TableCell sx={{ padding: '3px 8px' }}>Extension</TableCell>
                 <TableCell sx={{ padding: '3px 8px' }}>Extended Date</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {filteredTasks.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((task) => (
-                <TableRow key={task.id} onClick={() => handleRowClick(task.id)} style={{ cursor: 'pointer', backgroundColor: task.status === 'DONE' ? '#a0c3a0' : (task.extension ? '#ddb0b0' : 'inherit') }}>
+                <TableRow
+                  key={task.id}
+                  onClick={() => handleRowClick(task.id)}
+                  style={{
+                    cursor: 'pointer',
+                    backgroundColor: isDeadlineExceeded(task.deadline)
+                      ? '#f8d7da'
+                      : task.status === 'DONE'
+                      ? '#a0c3a0'
+                      : task.extension
+                      ? '#ddb0b0'
+                      : 'inherit'
+                  }}
+                >
                   <TableCell sx={{ padding: '3px 8px' }}>{task.id}</TableCell>
                   <TableCell sx={{ padding: '3px 8px' }}>{task.title}</TableCell>
                   <TableCell sx={{ padding: '3px 8px' }}>
-                    {task.assigned_to.split(',').map(user => (
+                    {task.assigned_to && task.assigned_to.split(',').map(user => (
                       <span key={user} style={isPrimaryUser(user, task.primary_user_name) ? { color: 'green', fontWeight: 'bold' } : {}}>
                         {user}
                       </span>
@@ -197,37 +232,39 @@ const Dashboard = () => {
                   </TableCell>
                   <TableCell sx={{ padding: '3px 8px' }}>{task.created_by_name}</TableCell>
                   <TableCell sx={{ padding: '3px 8px' }}>{task.status}</TableCell>
-                  <TableCell sx={{ padding: '3px 8px' }}>{new Date(task.created_at).toLocaleString()}</TableCell>
                   <TableCell sx={{ padding: '3px 8px' }}>{task.remarks}</TableCell>
-                  <TableCell sx={{ padding: '3px 8px' }}>{task.progress}</TableCell>
-                  <TableCell sx={{ padding: '3px 8px' }}>{new Date(task.deadline).toLocaleString()}</TableCell>
                   <TableCell sx={{ padding: '3px 8px' }}>
-                    <Checkbox
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setExtensionPopup({ open: true, taskId: task.id });
-                      }}
-                    />
+                    <Checkbox checked={task.progress === 1} readOnly />
                   </TableCell>
-                  <TableCell sx={{ padding: '3px 8px' }}>{task.extension}</TableCell>
+                  <TableCell sx={{ padding: '3px 8px' }}>{task.primary_user_name}</TableCell>
+                  <TableCell sx={{ padding: '3px 8px' }}>
+                    {task.extension ? <Button onClick={(e) => { e.stopPropagation(); setExtensionPopup({ open: true, taskId: task.id }); }}>Extend</Button> : 'N/A'}
+                  </TableCell>
+                  <TableCell sx={{ padding: '3px 8px' }}>
+                    {extendedDetails[task.id]?.extendedDate ? new Date(extendedDetails[task.id].extendedDate).toLocaleDateString() : 'N/A'}
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
           <TablePagination
+            rowsPerPageOptions={[5, 10, 15]}
             component="div"
             count={filteredTasks.length}
+            rowsPerPage={rowsPerPage}
             page={page}
             onPageChange={handleChangePage}
-            rowsPerPage={rowsPerPage}
             onRowsPerPageChange={handleChangeRowsPerPage}
           />
         </TableContainer>
-        <ExtensionPopup
-          open={extensionPopup.open}
-          onClose={() => setExtensionPopup({ open: false, taskId: null })}
-          onSave={handleExtensionSave}
-        />
+        {extensionPopup.open && (
+          <ExtensionPopup 
+            open={extensionPopup.open} 
+            onClose={() => setExtensionPopup({ open: false, taskId: null })} 
+            onSave={handleExtensionSave} 
+            taskId={extensionPopup.taskId} 
+          />
+        )}
       </Box>
     </div>
   );
