@@ -104,7 +104,11 @@ const Dashboard = () => {
     return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(
       2,
       "0"
-    )}-${String(date.getDate()).padStart(2, "0")}`;
+    )}-${String(date.getDate()).padStart(2, "0").toString().split("-").reverse().join("-")}`;
+    
+    // let newDate = date;
+    // newDate = new Date(oldDate.toString().split("-").reverse().join("-"));
+    console.log(this.return);
   };
 
   const uniquePrimaryUsers = [
@@ -112,11 +116,11 @@ const Dashboard = () => {
       tasks.map((task) => task.primary_user_name).filter((user) => user)
     ),
   ];
-  
+
   const isDeadlineExceeded = (deadline) => {
     if (!deadline) return false;
     const deadlineDate = new Date(deadline);
-    return deadlineDate < new Date();
+    return deadlineDate <= new Date();
   };
 
   const filteredTasks = tasks.filter((task) => {
@@ -146,7 +150,7 @@ const Dashboard = () => {
 
   return (
     <div className="container mx-auto">
-      <Box p={4}>
+      <Box p={2}>
         <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
           <Typography variant="h4">Dashboard</Typography>
           <Button variant="contained" color="primary" onClick={() => setShowPopup(true)}>
@@ -245,11 +249,11 @@ const Dashboard = () => {
                   <TableCell sx={{ padding: '3px 8px' }}>{task.id}</TableCell>
                   <TableCell sx={{ padding: '3px 8px' }}>{task.title}</TableCell>
                   <TableCell sx={{ padding: '3px 8px' }}>
-                    {task.assigned_to.split(',').map(user => (
+                    {task.assigned_to && task.assigned_to.split(',').map(user => (
                       <span key={user} style={isPrimaryUser(user, task.primary_user_name) ? { color: 'green', fontWeight: 'bold' } : {}}>
                         {user}
                       </span>
-                    )).reduce((prev, curr) => [prev, ', ', curr])}
+                    )).reduce((prev, curr) => [prev, ', ', curr], '')}
                   </TableCell>
                   <TableCell sx={{ padding: '3px 8px' }}>{task.created_by_name}</TableCell>
                   <TableCell sx={{ padding: '3px 8px' }}>{task.status}</TableCell>
