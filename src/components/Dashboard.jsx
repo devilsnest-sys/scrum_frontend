@@ -119,9 +119,17 @@ const Dashboard = () => {
 
   const isDeadlineExceeded = (deadline) => {
     if (!deadline) return false;
+    
+    const today = new Date();
     const deadlineDate = new Date(deadline);
-    return deadlineDate <= new Date();
+    
+    // Strip the time part from both dates
+    today.setHours(0, 0, 0, 0);
+    deadlineDate.setHours(0, 0, 0, 0);
+  
+    return deadlineDate < today;
   };
+  
 
   const filteredTasks = tasks.filter((task) => {
     return (
@@ -135,7 +143,10 @@ const Dashboard = () => {
     );
   });
 
-  const uniqueUsers = [...new Set(tasks.flatMap(task => task.assigned_to?.split(',').map(user => user.trim()) ?? []))];
+  const uniqueUsers = [...new Set(tasks.flatMap(task => 
+    task.assigned_to?.split(',').map(user => user.trim()) ?? []
+  ))];
+  
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -159,14 +170,14 @@ const Dashboard = () => {
         </Box>
         {showPopup && <AddTaskPopup setShowPopup={setShowPopup} />}
         <Box display="block" justifyContent="space-between" alignItems="center" mb={2} p={1} style={{ background: '#f5f5f5', borderRadius: '4px' }}>
-        <TextField
+        {/* <TextField
             label="Task ID"
             value={filterId}
             onChange={(e) => setFilterId(e.target.value)}
             variant="outlined"
             size="small"
             style={{ marginRight: 8, width: "15%" }}
-          />
+          /> */}
           <TextField
             label="Status"
             value={filterStatus}
@@ -224,7 +235,7 @@ const Dashboard = () => {
                 <TableCell sx={{ padding: '3px 8px' }}>Status</TableCell>
                 <TableCell sx={{ padding: '3px 8px' }}>Created At</TableCell>
                 <TableCell sx={{ padding: '3px 8px' }}>Remarks</TableCell>
-                <TableCell sx={{ padding: '3px 8px' }}>Progress</TableCell>
+                {/* <TableCell sx={{ padding: '3px 8px' }}>Progress</TableCell> */}
                 <TableCell sx={{ padding: '3px 8px' }}>Deadline</TableCell>
                 <TableCell sx={{ padding: '3px 8px' }}>Extension</TableCell>
                 <TableCell sx={{ padding: '3px 8px' }}>Extended Date</TableCell>
@@ -249,11 +260,18 @@ const Dashboard = () => {
                   <TableCell sx={{ padding: '3px 8px' }}>{task.id}</TableCell>
                   <TableCell sx={{ padding: '3px 8px' }}>{task.title}</TableCell>
                   <TableCell sx={{ padding: '3px 8px' }}>
-                    {task.assigned_to && task.assigned_to.split(',').map(user => (
-                      <span key={user} style={isPrimaryUser(user, task.primary_user_name) ? { color: 'green', fontWeight: 'bold' } : {}}>
-                        {user}
-                      </span>
-                    )).reduce((prev, curr) => [prev, ', ', curr], '')}
+                    {task.assigned_to && task.assigned_to
+                      .split(',')
+                      .map(user => user.trim())
+                      .map((user, index, array) => (
+                        <span
+                          key={user}
+                          style={isPrimaryUser(user, task.primary_user_name) ? { color: 'green', fontWeight: 'bold' } : {}}
+                        >
+                          {user}
+                          {index < array.length - 1 && ', '}
+                        </span>
+                      ))}
                   </TableCell>
                   <TableCell sx={{ padding: '3px 8px' }}>{task.created_by_name}</TableCell>
                   <TableCell sx={{ padding: '3px 8px' }}>{task.status}</TableCell>
@@ -261,7 +279,7 @@ const Dashboard = () => {
                       {formatDate(task.created_at)}
                     </TableCell>
                   <TableCell sx={{ padding: '3px 8px' }}>{task.remarks}</TableCell>
-                  <TableCell sx={{ padding: '3px 8px' }}>{task.progress}</TableCell>
+                  {/* <TableCell sx={{ padding: '3px 8px' }}>{task.progress}</TableCell> */}
                   <TableCell sx={{ padding: "3px 8px" }}>
                       {formatDate(task.deadline)}
                     </TableCell>
