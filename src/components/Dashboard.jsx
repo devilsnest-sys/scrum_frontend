@@ -245,15 +245,15 @@ const Dashboard = () => {
                 onClick={() => handleRowClick(task.id)}
                 style={{
                   cursor: "pointer",
-                  backgroundColor: isDeadlineExceeded(task.deadline)
+                  backgroundColor: task.status === "DONE"
+                    ? "#a0c3a0" // Light green for completed tasks
+                    : isDeadlineExceeded(task.deadline)
                     ? "#f8d7da" // Light pink for exceeded deadline
                     : task.extension
                     ? "#d1ecf1" // Light blue for extended tasks
-                    : task.status === "DONE"
-                    ? "#a0c3a0" // Light green for completed tasks
                     : "inherit",
                 }}
-              >
+              >              
                   <TableCell sx={{ padding: '3px 8px' }}>{task.id}</TableCell>
                   <TableCell sx={{ padding: '3px 8px' }}>{task.title}</TableCell>
                   <TableCell sx={{ padding: '3px 8px' }}>
