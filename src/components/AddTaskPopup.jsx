@@ -105,6 +105,7 @@ const AddTaskPopup = ({ setShowPopup }) => {
         showConfirmButton: false
       });
       setShowPopup(false);
+      window.location.reload();
     } catch (error) {
       console.error(error);
       Swal.fire({

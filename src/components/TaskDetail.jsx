@@ -14,9 +14,14 @@ import {
   FormControl,
   InputLabel,
   Grid,
-  IconButton,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  IconButton
 } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
+import EditIcon from '@mui/icons-material/Edit';
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
 const TaskDetail = () => {
@@ -27,6 +32,10 @@ const TaskDetail = () => {
   const [status, setStatus] = useState('');
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [openEditDialog, setOpenEditDialog] = useState(false);
+  const [allUsers, setAllUsers] = useState([]);
+  const [assignedUsers, setAssignedUsers] = useState([]);
+  const [primaryUser, setPrimaryUser] = useState('');
   const currentUser = localStorage.getItem('username'); // assuming you store the username in localStorage
 
   useEffect(() => {
@@ -48,6 +57,21 @@ const TaskDetail = () => {
     };
 
     fetchTaskDetails();
+
+    const fetchAllUsers = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await axios.get(`${API_BASE_URL}/users`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setAllUsers(response.data);
+      } catch (error) {
+        console.error('There was an error fetching users!', error);
+      }
+    };
+
+    fetchAllUsers();
+
   }, [id]);
 
   const handleCommentChange = (event) => {
@@ -92,6 +116,43 @@ const TaskDetail = () => {
       console.log(`Status updated to: ${status}`);
     } catch (error) {
       console.error('There was an error updating the status!', error);
+    }
+  };
+
+  const handleEditDialogOpen = () => {
+    setOpenEditDialog(true);
+  };
+
+  const handleEditDialogClose = () => {
+    setOpenEditDialog(false);
+  };
+
+  const handleAssignedUsersChange = (event) => {
+    setAssignedUsers(event.target.value);
+  };
+
+  const handlePrimaryUserChange = (event) => {
+    setPrimaryUser(event.target.value);
+  };
+
+  const handleEditSubmit = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.patch(
+        `${API_BASE_URL}/tasks/${id}/update`,
+        { assigned_to: assignedUsers, primary_assigned_to: primaryUser },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setOpenEditDialog(false);
+      // Re-fetch task details to update the view
+      const response = await axios.get(`${API_BASE_URL}/tasks/${id}`, {
+        headers: { Authorization: `Bearer ${token}` } },
+      );
+      setTask(response.data.task);
+      setAssignedUsers(response.data.task.assigned_to.split(', '));
+      setPrimaryUser(response.data.task.primary_assigned_to);
+    } catch (error) {
+      console.error('There was an error updating the task!', error);
     }
   };
 
@@ -207,7 +268,15 @@ const TaskDetail = () => {
               disabled size="small"
             />
           </Grid>
-          <Grid item xs={4}>
+          <Grid item xs={3}>
+            <TextField
+              label="Primary"
+              value={task.primary_assigned_to}
+              fullWidth
+              disabled size="small"
+            />
+          </Grid>
+          <Grid item xs={3}>
             <FormControl fullWidth margin="normal" size="small">
               <InputLabel>Status</InputLabel>
               <Select value={status} onChange={handleStatusChange}>
@@ -216,7 +285,7 @@ const TaskDetail = () => {
               </Select>
             </FormControl>
           </Grid>
-          <Grid item xs={5}>
+          <Grid item xs={2}>
             <Button
               variant="contained"
               color="primary"
@@ -225,6 +294,18 @@ const TaskDetail = () => {
             >
               Update Status
             </Button>
+            
+          </Grid>
+          <Grid item xs={2}>
+          <Button
+                variant="contained"
+                color="primary"
+                startIcon={<EditIcon />}
+                onClick={handleEditDialogOpen}
+                style={{ marginTop: 16 }}
+              >
+                Edit Task
+              </Button>
           </Grid>
         </Grid>
         <Typography variant="h6" gutterBottom>Comments</Typography>
@@ -290,6 +371,49 @@ const TaskDetail = () => {
             <SendIcon />
           </IconButton>
         </Box>
+
+        {/* Popup */}
+        <Dialog className='popup-ext' open={openEditDialog} onClose={handleEditDialogClose} PaperProps={{style: {width: '400px',},}}>
+            <DialogTitle>Edit Task</DialogTitle>
+            <DialogContent>
+              <FormControl fullWidth margin="normal" size="small">
+                <InputLabel>Assigned Users</InputLabel>
+                <Select
+                  multiple
+                  value={assignedUsers}
+                  onChange={handleAssignedUsersChange}
+                  renderValue={(selected) => selected.join(', ')}
+                >
+                  {allUsers.map((user) => (
+                    <MenuItem key={user.id} value={user.username}>
+                      {user.username}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+              <FormControl fullWidth margin="normal" size="small">
+                <InputLabel>Primary User</InputLabel>
+                <Select
+                  value={primaryUser}
+                  onChange={handlePrimaryUserChange}
+                >
+                  {assignedUsers.map((user) => (
+                    <MenuItem key={user} value={user}>
+                      {user}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={handleEditDialogClose} color="secondary">
+                Cancel
+              </Button>
+              <Button onClick={handleEditSubmit} color="primary">
+                Save
+              </Button>
+            </DialogActions>
+          </Dialog>
       </Paper>
     </Box>
     </div>

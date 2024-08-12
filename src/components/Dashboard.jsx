@@ -101,14 +101,11 @@ const Dashboard = () => {
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
-    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(
-      2,
-      "0"
-    )}-${String(date.getDate()).padStart(2, "0").toString().split("-").reverse().join("-")}`;
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const year = date.getFullYear();
     
-    // let newDate = date;
-    // newDate = new Date(oldDate.toString().split("-").reverse().join("-"));
-    console.log(this.return);
+    return `${day}-${month}-${year}`;
   };
 
   const uniquePrimaryUsers = [
