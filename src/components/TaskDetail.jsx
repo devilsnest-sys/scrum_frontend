@@ -120,6 +120,8 @@ const TaskDetail = () => {
   };
 
   const handleEditDialogOpen = () => {
+    setAssignedUsers(task.assigned_to.split(', '));
+    setPrimaryUser(task.primary_assigned_to);
     setOpenEditDialog(true);
   };
 
@@ -144,7 +146,6 @@ const TaskDetail = () => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setOpenEditDialog(false);
-      // Re-fetch task details to update the view
       const response = await axios.get(`${API_BASE_URL}/tasks/${id}`, {
         headers: { Authorization: `Bearer ${token}` } },
       );
@@ -164,14 +165,21 @@ const TaskDetail = () => {
     return <Typography variant="h6" color="error">{error}</Typography>;
   }
 
-  const formatDate = (dateString) => {
-    const options = { year: 'numeric', month: 'long', day: 'numeric' };
-    return new Date(dateString).toLocaleDateString(undefined, options);
-  };
+  // const formatDate = (dateString) => {
+  //   const options = { year: 'numeric', month: 'long', day: 'numeric' };
+  //   return new Date(dateString).toLocaleDateString(undefined, options);
+  // };
 
-  const formatTime = (timeString) => {
-    const options = { hour: 'numeric', minute: 'numeric', hour12: true };
-    return new Date(timeString).toLocaleTimeString(undefined, options);
+  const formatDateTime = (dateTimeString) => {
+    const options = {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: 'numeric',
+      hour12: true,
+    };
+    return new Date(dateTimeString).toLocaleString(undefined, options);
   };
 
   return (
@@ -321,9 +329,9 @@ const TaskDetail = () => {
             backgroundColor: '#f9f9f9'
           }}
         >
-          <Typography variant="body2" color="textSecondary" align="center" gutterBottom>
+          {/* <Typography variant="body2" color="textSecondary" align="center" gutterBottom>
             {formatDate(new Date())}
-          </Typography>
+          </Typography> */}
           {comments.map((comment) => (
             <Box
               key={comment.id}
@@ -347,7 +355,7 @@ const TaskDetail = () => {
                   <strong>{comment.username}:</strong> {comment.comment}
                 </Typography>
                 <Typography variant="caption" color="textSecondary">
-                  {formatTime(comment.created_at)}
+                  {formatDateTime(comment.created_at)}
                 </Typography>
               </Box>
             </Box>
@@ -414,8 +422,8 @@ const TaskDetail = () => {
               </Button>
             </DialogActions>
           </Dialog>
-      </Paper>
-    </Box>
+        </Paper>
+      </Box>
     </div>
   );
 };
