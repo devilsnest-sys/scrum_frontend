@@ -281,12 +281,14 @@ const Dashboard = () => {
                       {formatDate(task.deadline)}
                     </TableCell>
                   <TableCell sx={{ padding: '3px 8px' }}>
-                    <Checkbox
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setExtensionPopup({ open: true, taskId: task.id });
-                      }}
-                    />
+                      {isDeadlineExceeded(task.deadline) && (
+                        <Checkbox
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setExtensionPopup({ open: true, taskId: task.id });
+                          }}
+                        />
+                      )}
                   </TableCell>
                   <TableCell sx={{ padding: "3px 8px" }}>
                       {task.extension ? formatDate(task.extension) : "-"}

@@ -1,12 +1,22 @@
-// src/components/ExtensionPopup.jsx
 import React, { useState } from 'react';
-import { Box, Button, TextField, Typography, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
+import { Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
 
 const ExtensionPopup = ({ open, onClose, onSave }) => {
   const [extendedDate, setExtendedDate] = useState('');
   const [reason, setReason] = useState('');
+  const [dateError, setDateError] = useState('');
 
   const handleSave = () => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Set time to 00:00:00 to compare only the date part
+    const selectedDate = new Date(extendedDate);
+
+    if (selectedDate < today) {
+      setDateError('The extended date cannot be in the past.');
+      return;
+    }
+
+    setDateError('');
     onSave({ extendedDate, reason });
     onClose();
   };
@@ -23,6 +33,8 @@ const ExtensionPopup = ({ open, onClose, onSave }) => {
           value={extendedDate}
           onChange={(e) => setExtendedDate(e.target.value)}
           InputLabelProps={{ shrink: true }}
+          error={!!dateError}
+          helperText={dateError}
         />
         <TextField
           margin="dense"
