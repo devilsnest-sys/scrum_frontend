@@ -73,8 +73,16 @@ const AddTaskPopup = ({ setShowPopup }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Ensure deadline is not in the past
+    const today = new Date().toISOString().split('T')[0]; // Get today's date in YYYY-MM-DD format
     if (!title || !description || !status || !deadline || !primaryAssignee) {
       alert("Please fill out all required fields");
+      return;
+    }
+    
+    if (deadline < today) {
+      alert("The deadline cannot be in the past. Please select a valid date.");
       return;
     }
 
@@ -252,6 +260,9 @@ const AddTaskPopup = ({ setShowPopup }) => {
             margin="normal"
             InputLabelProps={{
               shrink: true,
+            }}
+            inputProps={{
+              min: new Date().toISOString().split('T')[0], // Disable past dates
             }}
             required
           />
