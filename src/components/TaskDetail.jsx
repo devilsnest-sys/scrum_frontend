@@ -188,15 +188,15 @@ const TaskDetail = () => {
       <Paper style={{ padding: 16 }}>
         <Typography variant="h4" gutterBottom>Task Details</Typography>
         <Grid container spacing={2}>
-          <Grid item xs={3}>
+          {/* <Grid item xs={3}>
             <TextField
               label="ID"
               value={task.id}
               fullWidth
               disabled size="small"
             />
-          </Grid>
-          <Grid item xs={3}>
+          </Grid> */}
+          <Grid item xs={2}>
             <TextField
               label="Title"
               value={task.title}
@@ -204,7 +204,7 @@ const TaskDetail = () => {
               disabled size="small"
             />
           </Grid>
-          <Grid item xs={3}>
+          <Grid item xs={2}>
             <TextField
               label="Assigned To"
               value={task.assigned_to}
@@ -212,7 +212,7 @@ const TaskDetail = () => {
               disabled size="small"
             />
           </Grid>
-          <Grid item xs={3}>
+          <Grid item xs={2}>
             <TextField
               label="Created By"
               value={task.created_by_name}
@@ -220,7 +220,7 @@ const TaskDetail = () => {
               disabled size="small"
             />
           </Grid>
-          <Grid item xs={3}>
+          <Grid item xs={2}>
             <TextField
               label="Status"
               value={task.status}
@@ -228,7 +228,7 @@ const TaskDetail = () => {
               disabled size="small"
             />
           </Grid>
-          <Grid item xs={3}>
+          <Grid item xs={2}>
             <TextField
               label="Created At"
               value={new Date(task.created_at).toLocaleString()}
@@ -236,7 +236,7 @@ const TaskDetail = () => {
               disabled size="small"
             />
           </Grid>
-          <Grid item xs={3}>
+          <Grid item xs={2}>
             <TextField
               label="Remarks"
               value={task.remarks}
@@ -244,15 +244,15 @@ const TaskDetail = () => {
               disabled size="small"
             />
           </Grid>
-          <Grid item xs={3}>
+          {/* <Grid item xs={3}>
             <TextField
               label="Progress"
               value={task.progress}
               fullWidth
               disabled size="small"
             />
-          </Grid>
-          <Grid item xs={3}>
+          </Grid> */}
+          <Grid item xs={2}>
             <TextField
               label="Deadline"
               value={new Date(task.deadline).toLocaleString()}
@@ -260,7 +260,7 @@ const TaskDetail = () => {
               disabled size="small"
             />
           </Grid>
-          <Grid item xs={3}>
+          <Grid item xs={2}>
             <TextField
               label="Extension"
               value={task.extension}
@@ -268,7 +268,7 @@ const TaskDetail = () => {
               disabled size="small"
             />
           </Grid>
-          <Grid item xs={3}>
+          <Grid item xs={2}>
             <TextField
               label="Reason"
               value={task.reason}
@@ -276,7 +276,7 @@ const TaskDetail = () => {
               disabled size="small"
             />
           </Grid>
-          <Grid item xs={3}>
+          <Grid item xs={2}>
             <TextField
               label="Primary"
               value={task.primary_assigned_to}
@@ -284,7 +284,9 @@ const TaskDetail = () => {
               disabled size="small"
             />
           </Grid>
-          <Grid item xs={3}>
+          </Grid>
+          <Grid container spacing={2}>
+          <Grid item xs={2}>
             <FormControl fullWidth margin="normal" size="small">
               <InputLabel>Status</InputLabel>
               <Select value={status} onChange={handleStatusChange}>
