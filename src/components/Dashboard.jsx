@@ -18,6 +18,8 @@ const Dashboard = () => {
   const [filterStatus, setFilterStatus] = useState('');
   const [filterAssignedTo, setFilterAssignedTo] = useState('');
   const [filterPrimaryUser, setFilterPrimaryUser] = useState("");
+  const [filterDeadline, setFilterDeadline] = useState('');
+  const [filterCreatedDate, setFilterCreatedDate] = useState('');
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(15);
   const navigate = useNavigate();
@@ -129,6 +131,9 @@ const Dashboard = () => {
   
 
   const filteredTasks = tasks.filter((task) => {
+    const isWithinDeadline = !filterDeadline || formatDate(task.deadline) === formatDate(filterDeadline);
+    const isWithinCreatedDate = !filterCreatedDate || formatDate(task.created_at) === formatDate(filterCreatedDate);
+
     return (
       (filterId === "" || task.id.toString().includes(filterId)) &&
       (filterStatus === "" || task.status.includes(filterStatus)) &&
@@ -136,7 +141,9 @@ const Dashboard = () => {
         (task.assigned_to && task.assigned_to.includes(filterAssignedTo))) &&
       (filterPrimaryUser === "" ||
         (task.primary_user_name &&
-          task.primary_user_name.includes(filterPrimaryUser)))
+          task.primary_user_name.includes(filterPrimaryUser))) &&
+      isWithinDeadline &&
+      isWithinCreatedDate
     );
   });
 
@@ -167,14 +174,6 @@ const Dashboard = () => {
         </Box>
         {showPopup && <AddTaskPopup setShowPopup={setShowPopup} />}
         <Box display="block" justifyContent="space-between" alignItems="center" mb={2} p={1} style={{ background: '#f5f5f5', borderRadius: '4px' }}>
-        {/* <TextField
-            label="Task ID"
-            value={filterId}
-            onChange={(e) => setFilterId(e.target.value)}
-            variant="outlined"
-            size="small"
-            style={{ marginRight: 8, width: "15%" }}
-          /> */}
           <TextField
             label="Status"
             value={filterStatus}
@@ -211,7 +210,7 @@ const Dashboard = () => {
             variant="outlined"
             size="small"
             select
-            style={{ width: "15%" }}
+            style={{ marginRight: 8, width: "15%" }}
           >
             <MenuItem value="">All</MenuItem>
             {uniquePrimaryUsers.map((user) => (
@@ -220,6 +219,26 @@ const Dashboard = () => {
               </MenuItem>
             ))}
           </TextField>
+          <TextField
+            label="Deadline"
+            type="date"
+            value={filterDeadline}
+            onChange={(e) => setFilterDeadline(e.target.value)}
+            variant="outlined"
+            size="small"
+            style={{ marginRight: 8, width: "15%" }}
+            InputLabelProps={{ shrink: true }}
+          />
+          <TextField
+            label="Created Date"
+            type="date"
+            value={filterCreatedDate}
+            onChange={(e) => setFilterCreatedDate(e.target.value)}
+            variant="outlined"
+            size="small"
+            style={{ width: "15%" }}
+            InputLabelProps={{ shrink: true }}
+          />
         </Box>
         <TableContainer component={Paper}>
           <Table>
