@@ -19,7 +19,7 @@ const Dashboard = () => {
   const [filterAssignedTo, setFilterAssignedTo] = useState('');
   const [filterPrimaryUser, setFilterPrimaryUser] = useState("");
   const [filterDeadline, setFilterDeadline] = useState('');
-  const [filterCreatedDate, setFilterCreatedDate] = useState('');
+  const [filterExtension, setfilterExtension] = useState('');
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(15);
   const navigate = useNavigate();
@@ -132,7 +132,7 @@ const Dashboard = () => {
 
   const filteredTasks = tasks.filter((task) => {
     const isWithinDeadline = !filterDeadline || formatDate(task.deadline) === formatDate(filterDeadline);
-    const isWithinCreatedDate = !filterCreatedDate || formatDate(task.created_at) === formatDate(filterCreatedDate);
+    const isWithinExtensionDate = !filterExtension || formatDate(task.extension) === formatDate(filterExtension);
 
     return (
       (filterId === "" || task.id.toString().includes(filterId)) &&
@@ -143,7 +143,7 @@ const Dashboard = () => {
         (task.primary_user_name &&
           task.primary_user_name.includes(filterPrimaryUser))) &&
       isWithinDeadline &&
-      isWithinCreatedDate
+      isWithinExtensionDate
     );
   });
 
@@ -230,10 +230,10 @@ const Dashboard = () => {
             InputLabelProps={{ shrink: true }}
           />
           <TextField
-            label="Created Date"
+            label="Extension Date"
             type="date"
-            value={filterCreatedDate}
-            onChange={(e) => setFilterCreatedDate(e.target.value)}
+            value={filterExtension}
+            onChange={(e) => setfilterExtension(e.target.value)}
             variant="outlined"
             size="small"
             style={{ width: "15%" }}
@@ -274,8 +274,8 @@ const Dashboard = () => {
                 }}
               >              
                   <TableCell sx={{ padding: '3px 8px' }}>{task.id}</TableCell>
-                  <TableCell sx={{ padding: '3px 8px' }}>{task.title}</TableCell>
-                  <TableCell sx={{ padding: '3px 8px' }}>
+                  <TableCell sx={{ padding: '3px 8px',maxWidth: '200px' }}>{task.title}</TableCell>
+                  <TableCell sx={{ padding: '3px 8px',maxWidth: '200px' }}>
                     {task.assigned_to && task.assigned_to
                       .split(',')
                       .map(user => user.trim())
@@ -289,17 +289,19 @@ const Dashboard = () => {
                         </span>
                       ))}
                   </TableCell>
-                  <TableCell sx={{ padding: '3px 8px' }}>{task.created_by_name}</TableCell>
-                  <TableCell sx={{ padding: '3px 8px' }}>{task.status}</TableCell>
-                  <TableCell sx={{ padding: "3px 8px" }}>
+                  <TableCell sx={{ padding: '3px 8px',maxWidth: '100px' }}>{task.created_by_name}</TableCell>
+                  <TableCell sx={{ padding: '3px 8px',maxWidth: '100px' }}>{task.status}</TableCell>
+                  <TableCell sx={{ padding: "3px 8px",maxWidth: '150px' }}>
                       {formatDate(task.created_at)}
                     </TableCell>
-                  <TableCell sx={{ padding: '3px 8px' }}>{task.remarks}</TableCell>
+                    <TableCell sx={{ padding: '3px 8px', maxWidth: '400px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {task.remarks}
+                    </TableCell>
                   {/* <TableCell sx={{ padding: '3px 8px' }}>{task.progress}</TableCell> */}
-                  <TableCell sx={{ padding: "3px 8px" }}>
+                  <TableCell sx={{ padding: "3px 8px",maxWidth: '150px' }}>
                       {formatDate(task.deadline)}
                     </TableCell>
-                  <TableCell sx={{ padding: '3px 8px' }}>
+                  <TableCell sx={{ padding: '3px 8px',maxWidth: '150px' }}>
                       {isDeadlineExceeded(task.deadline) && (
                         <Checkbox
                           onClick={(e) => {

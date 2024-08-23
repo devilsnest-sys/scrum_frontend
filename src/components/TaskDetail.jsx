@@ -236,14 +236,7 @@ const TaskDetail = () => {
               disabled size="small"
             />
           </Grid>
-          <Grid item xs={2}>
-            <TextField
-              label="Remarks"
-              value={task.remarks}
-              fullWidth
-              disabled size="small"
-            />
-          </Grid>
+          
           {/* <Grid item xs={3}>
             <TextField
               label="Progress"
@@ -317,6 +310,19 @@ const TaskDetail = () => {
                 Edit Task
               </Button>
           </Grid>
+          <Grid item xs={12}>
+  <TextField
+    sx={{ maxWidth: '100%' }}
+    label="Remarks"
+    value={task.remarks}
+    fullWidth
+    disabled
+    size="small"
+    multiline
+    rows={4}  // You can adjust the number of rows as needed
+  />
+</Grid>
+
         </Grid>
         <Typography variant="h6" gutterBottom>Comments</Typography>
         <Box
