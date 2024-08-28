@@ -145,6 +145,16 @@ const Dashboard = () => {
       isWithinDeadline &&
       isWithinExtensionDate
     );
+  })
+  .sort((a, b) => {
+    // Custom sorting: "IN PROCESS" tasks should be at the top
+    if (a.status === "IN PROCESS" && b.status !== "IN PROCESS") {
+      return -1; // a comes first
+    }
+    if (a.status !== "IN PROCESS" && b.status === "IN PROCESS") {
+      return 1; // b comes first
+    }
+    return 0; // Keep the order as it is
   });
 
   const uniqueUsers = [...new Set(tasks.flatMap(task => 
@@ -185,7 +195,7 @@ const Dashboard = () => {
           >
             <MenuItem value="">All</MenuItem>
             <MenuItem value="IN PROCESS">IN PROCESS</MenuItem>
-            <MenuItem value="DONE">DONE</MenuItem>
+            <MenuItem value="DONE">  </MenuItem>
           </TextField>
           <TextField
             label="Assigned To"
