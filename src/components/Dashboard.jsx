@@ -195,7 +195,7 @@ const Dashboard = () => {
           >
             <MenuItem value="">All</MenuItem>
             <MenuItem value="IN PROCESS">IN PROCESS</MenuItem>
-            <MenuItem value="DONE">  </MenuItem>
+            <MenuItem value="DONE">DONE</MenuItem>
           </TextField>
           <TextField
             label="Assigned To"
