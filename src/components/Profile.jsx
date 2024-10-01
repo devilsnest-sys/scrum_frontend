@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { Container, Box, Typography, TextField, Button, CircularProgress, Paper, Grid } from '@mui/material';
+import { Container, Box, Typography, TextField, Button, CircularProgress, Paper, Grid, Avatar } from '@mui/material';
 import { styled } from '@mui/system';
 import Swal from 'sweetalert2';
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
@@ -16,6 +16,7 @@ const Profile = () => {
   const [oldPassword, setOldPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [profileImage, setProfileImage] = useState(null); // New state for profile image
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -40,7 +41,7 @@ const Profile = () => {
 
   const handlePasswordChange = async () => {
     try {
-      await axios.patch('http://192.168.0.27:5000/change-password', {
+      await axios.patch(`${API_BASE_URL}/change-password`, {
         oldPassword,
         newPassword
       }, {
@@ -48,15 +49,14 @@ const Profile = () => {
           Authorization: `Bearer ${localStorage.getItem('token')}`
         }
       });
-    //   alert('Password updated successfully.');'
-        Swal.fire({
+
+      Swal.fire({
         icon: 'success',
         title: 'Password Change Successful',
-        // text: 'Redirecting to the dashboard...',
         timer: 1500,
         timerProgressBar: true,
         showConfirmButton: false
-      })
+      });
       setOldPassword('');
       setNewPassword('');
     } catch (error) {
@@ -64,9 +64,46 @@ const Profile = () => {
       Swal.fire({
         icon: 'error',
         title: 'Failed',
-        text: 'Error updating password: '
+        text: 'Error updating password.'
       });
-    //   alert('Failed to update password.');
+    }
+  };
+
+  const handleProfileImageChange = (e) => {
+    setProfileImage(e.target.files[0]); // Get the file from input
+  };
+
+  const handleProfileImageUpload = async () => {
+    if (!profileImage) return;
+
+    const formData = new FormData();
+    formData.append('profile_image', profileImage);
+
+    try {
+      const response = await axios.post(`${API_BASE_URL}/upload-profile-image`, formData, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'multipart/form-data',
+        }
+      });
+
+      Swal.fire({
+        icon: 'success',
+        title: 'Profile Image Uploaded',
+        timer: 1500,
+        timerProgressBar: true,
+        showConfirmButton: false
+      });
+
+      // Update profile state to reflect the new image
+      setProfile((prev) => ({ ...prev, profile_image: response.data.imagePath }));
+    } catch (error) {
+      console.error('Error uploading profile image:', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Failed',
+        text: 'Error uploading profile image.'
+      });
     }
   };
 
@@ -80,9 +117,24 @@ const Profile = () => {
         <Typography variant="h4" gutterBottom>
           Profile
         </Typography>
+        <Avatar 
+          src={profile.profile_image ? `${API_BASE_URL}${profile.profile_image}` : '/default-avatar.png'} 
+          alt="Profile Image"
+          sx={{ width: 100, height: 100 }}
+        />
         <Typography variant="h6">Username: {profile.username}</Typography>
         <Typography variant="h6">Total Tasks: {profile.total_tasks}</Typography>
         <Typography variant="h6">Tasks Done: {profile.done_tasks}</Typography>
+
+        {/* File upload for profile image */}
+        <input
+          type="file"
+          accept="image/*"
+          onChange={handleProfileImageChange}
+        />
+        <Button variant="contained" color="primary" onClick={handleProfileImageUpload}>
+          Upload Profile Image
+        </Button>
       </StyledPaper>
 
       <StyledPaper elevation={3}>

@@ -14,15 +14,18 @@ const Dashboard = () => {
   const [showPopup, setShowPopup] = useState(false);
   const [extensionPopup, setExtensionPopup] = useState({ open: false, taskId: null });
   const [extendedDetails, setExtendedDetails] = useState({});
-  const [filterId, setFilterId] = useState('');
-  const [filterStatus, setFilterStatus] = useState('');
-  const [filterAssignedTo, setFilterAssignedTo] = useState('');
-  const [filterPrimaryUser, setFilterPrimaryUser] = useState("");
-  const [filterDeadline, setFilterDeadline] = useState('');
-  const [filterExtension, setfilterExtension] = useState('');
+  
+  // Filters
+  const [filterId, setFilterId] = useState(localStorage.getItem('filterId') || '');
+  const [filterStatus, setFilterStatus] = useState(localStorage.getItem('filterStatus') || '');
+  const [filterAssignedTo, setFilterAssignedTo] = useState(localStorage.getItem('filterAssignedTo') || '');
+  const [filterPrimaryUser, setFilterPrimaryUser] = useState(localStorage.getItem('filterPrimaryUser') || '');
+  const [filterDeadline, setFilterDeadline] = useState(localStorage.getItem('filterDeadline') || '');
+  const [filterExtension, setfilterExtension] = useState(localStorage.getItem('filterExtension') || '');
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(15);
   const navigate = useNavigate();
+
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -71,6 +74,10 @@ const Dashboard = () => {
       socket.off('newComment');
     };
   }, []);
+  const handleFilterChange = (setter, value, key) => {
+    setter(value);
+    localStorage.setItem(key, value);
+  };
 
   const handleRowClick = (id) => {
     navigate(`/task/${id}`);
@@ -128,6 +135,22 @@ const Dashboard = () => {
   
     return deadlineDate < today;
   };
+
+  const handleResetFilters = () => {
+    setFilterId('');
+    setFilterStatus('');
+    setFilterAssignedTo('');
+    setFilterPrimaryUser('');
+    setFilterDeadline('');
+    setfilterExtension('');
+
+    localStorage.removeItem('filterId');
+    localStorage.removeItem('filterStatus');
+    localStorage.removeItem('filterAssignedTo');
+    localStorage.removeItem('filterPrimaryUser');
+    localStorage.removeItem('filterDeadline');
+    localStorage.removeItem('filterExtension');
+  };
   
 
   const filteredTasks = tasks.filter((task) => {
@@ -162,7 +185,7 @@ const Dashboard = () => {
   ))];
   
 
-  const handleChangePage = (event, newPage) => {
+  const handleChangePage = (event, newPage) => {  
     setPage(newPage);
   };
 
@@ -173,6 +196,9 @@ const Dashboard = () => {
 
   const isPrimaryUser = (user, primaryUserName) => user.trim() === primaryUserName;
 
+  const resetfilter = (event) =>{
+
+  };
   return (
     <div className="container mx-auto">
       <Box p={2}>
@@ -184,10 +210,10 @@ const Dashboard = () => {
         </Box>
         {showPopup && <AddTaskPopup setShowPopup={setShowPopup} />}
         <Box display="block" justifyContent="space-between" alignItems="center" mb={2} p={1} style={{ background: '#f5f5f5', borderRadius: '4px' }}>
-          <TextField
+        <TextField
             label="Status"
             value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
+            onChange={(e) => handleFilterChange(setFilterStatus, e.target.value, 'filterStatus')}
             variant="outlined"
             size="small"
             select
@@ -200,7 +226,7 @@ const Dashboard = () => {
           <TextField
             label="Assigned To"
             value={filterAssignedTo}
-            onChange={(e) => setFilterAssignedTo(e.target.value)}
+            onChange={(e) => handleFilterChange(setFilterAssignedTo, e.target.value, 'filterAssignedTo')}
             variant="outlined"
             size="small"
             select
@@ -216,7 +242,7 @@ const Dashboard = () => {
           <TextField
             label="Primary User"
             value={filterPrimaryUser}
-            onChange={(e) => setFilterPrimaryUser(e.target.value)}
+            onChange={(e) => handleFilterChange(setFilterPrimaryUser, e.target.value, 'filterPrimaryUser')}
             variant="outlined"
             size="small"
             select
@@ -233,22 +259,30 @@ const Dashboard = () => {
             label="Deadline"
             type="date"
             value={filterDeadline}
-            onChange={(e) => setFilterDeadline(e.target.value)}
+            onChange={(e) => handleFilterChange(setFilterDeadline, e.target.value, 'filterDeadline')}
             variant="outlined"
             size="small"
-            style={{ marginRight: 8, width: "15%" }}
             InputLabelProps={{ shrink: true }}
+            style={{ marginRight: 8, width: "15%" }}
           />
           <TextField
             label="Extension Date"
             type="date"
             value={filterExtension}
-            onChange={(e) => setfilterExtension(e.target.value)}
+            onChange={(e) => handleFilterChange(setfilterExtension, e.target.value, 'filterExtension')}
             variant="outlined"
             size="small"
-            style={{ width: "15%" }}
             InputLabelProps={{ shrink: true }}
+            style={{ marginRight: 8, width: "15%" }}
           />
+           <Button
+            variant="contained"
+            color="secondary"
+            onClick={handleResetFilters}
+            style={{ marginLeft: 8 }}
+          >
+            Reset Filters
+          </Button>
         </Box>
         <TableContainer component={Paper}>
           <Table>
